@@ -171,6 +171,8 @@ button,a { color:inherit; } a { text-decoration:none; } button { font:inherit; }
 .cover-swap.show-second .frame-1 { opacity:1; transform:scale(1); }
 .cover-swap.show-second .frame-0:not(:only-of-type) { opacity:0; transform:scale(1.015); }
 .cover-switch { position:absolute; bottom:12px; right:12px; border:0; padding:10px 14px; background:#181818dc; color:#e9e9e9; font-size:12px; cursor:pointer; }
+.cover-mobile-list { display:grid; gap:34px; }
+.cover-swipe-status { position:sticky; right:12px; bottom:12px; align-self:flex-end; flex:0 0 auto; margin:0 12px 12px -118px; padding:9px 12px; background:#181818dc; color:#e9e9e9; font-size:10px; line-height:1; letter-spacing:.08em; pointer-events:none; }
 .cover-unavailable { min-height:240px; display:grid; place-items:center; border:1px solid var(--line); color:var(--muted); }
 .campaign-title { padding:56px 0; }.campaign-title h3 { margin:18px 0; font-size:clamp(32px,5vw,72px); line-height:1.15; }.campaign-title p,.campaign-title>span { font-size:14px; color:var(--muted); }
 .campaign-section { margin-bottom:64px; }.campaign-section h4 { margin:0 0 24px; border-top:1px solid var(--line); padding-top:20px; font-size:14px; letter-spacing:.12em; }
@@ -196,6 +198,10 @@ button:focus-visible { outline:2px solid var(--blue); outline-offset:4px; }
  .theme-toggle { margin-left:auto; margin-right:8px; padding:8px; }
  .site-header nav { margin-left:0; }
  .project-work-grid,.cover-grid.ads-cover-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px 12px; }
+ .cover-swap.mobile-swipe { display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth; overscroll-behavior-x:contain; scrollbar-width:none; }
+ .cover-swap.mobile-swipe::-webkit-scrollbar { display:none; }
+ .cover-swap.mobile-swipe .cover-frame { position:relative; inset:auto; flex:0 0 100%; opacity:1; transform:none; scroll-snap-align:start; scroll-snap-stop:always; transition:none; }
+ .cover-card:hover .cover-swap.mobile-swipe .cover-frame { transform:none; }
  .campaign-title { padding:38px 0; }.merchandise-board { padding:16px; }
  .campaign-footer { display:block; }.other-campaigns { gap:10px; }.other-campaigns span { font-size:12px; }.campaign-pages { margin-top:24px; }
 }

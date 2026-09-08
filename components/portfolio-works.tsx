@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { categories, getCategory, type Work } from '@/lib/works';
@@ -15,12 +15,18 @@ function groupProjects(items:Work[]) {
   return [...groups].sort(([a],[b]) => order.compare(a,b)).map(([title,works]) => ({title,works}));
 }
 
-function Cover({ cover, square }: { cover:CoverSet; square:boolean }) {
+function Cover({ cover, square, mobileSwipe = false }: { cover:CoverSet; square:boolean; mobileSwipe?:boolean }) {
   const [frame, setFrame] = useState(0);
+  const swipeRef = useRef<HTMLDivElement>(null);
+  const updateSwipeFrame = () => {
+    const track = swipeRef.current;
+    if (!track || !track.clientWidth) return;
+    setFrame(Math.min(cover.images.length - 1, Math.max(0, Math.round(track.scrollLeft / track.clientWidth))));
+  };
   return <article className="cover-card">
-    <div className={`cover-swap ${square ? 'square' : ''}`} onPointerEnter={event => {if(event.pointerType === 'mouse' && cover.images.length > 1) setFrame(1);}} onPointerLeave={event => {if(event.pointerType === 'mouse') setFrame(0);}}>
+    <div ref={swipeRef} className={`cover-swap ${square ? 'square' : ''} ${mobileSwipe ? 'mobile-swipe' : ''}`} onScroll={mobileSwipe ? updateSwipeFrame : undefined} onPointerEnter={event => {if(!mobileSwipe && event.pointerType === 'mouse' && cover.images.length > 1) setFrame(1);}} onPointerLeave={event => {if(!mobileSwipe && event.pointerType === 'mouse') setFrame(0);}} aria-label={mobileSwipe ? `${cover.title}封面图，左右滑动切换` : undefined}>
       {cover.images.map((src,index) => <img key={src} className={`cover-frame ${frame === index ? 'is-active' : ''}`} src={src} alt={`${cover.title} — ${index+1}`} aria-hidden={frame !== index} loading="lazy" decoding="async" />)}
-      {cover.images.length > 1 && <button className="cover-switch" type="button" onClick={() => setFrame((frame+1)%cover.images.length)} aria-label={`切换${cover.title}封面，当前第${frame+1}张，共${cover.images.length}张`}>{String(frame+1).padStart(2,'0')} / {String(cover.images.length).padStart(2,'0')}</button>}
+      {cover.images.length > 1 && (mobileSwipe ? <span className="cover-swipe-status" aria-hidden="true">SWIPE&nbsp;&nbsp;{String(frame+1).padStart(2,'0')} / {String(cover.images.length).padStart(2,'0')}</span> : <button className="cover-switch" type="button" onClick={() => setFrame((frame+1)%cover.images.length)} aria-label={`切换${cover.title}封面，当前第${frame+1}张，共${cover.images.length}张`}>{String(frame+1).padStart(2,'0')} / {String(cover.images.length).padStart(2,'0')}</button>)}
     </div>
     <div className="work-meta"><h3>{cover.title}</h3><span>{getCategory(cover.category)?.en}</span></div>
   </article>;
@@ -30,7 +36,15 @@ export default function PortfolioWorks() {
   const [activeCategory, setActiveCategory] = useState(categories[0].id);
   const [expanded, setExpanded] = useState(false);
   const [campaignPage, setCampaignPage] = useState(0);
+  const [mobileCovers, setMobileCovers] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 720px)');
+    const update = () => setMobileCovers(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
   const category = getCategory(activeCategory)!;
   const items = importedWorks.filter(work => work.category === activeCategory).sort(compareWorks);
   const groups = groupProjects(items);
@@ -57,7 +71,7 @@ export default function PortfolioWorks() {
     <div className="category-strip" aria-label="作品分类">{categories.map((item,index) => <button key={item.id} className={activeCategory === item.id ? 'active' : ''} type="button" aria-pressed={activeCategory === item.id} onClick={() => changeCategory(item.id)}><span>{String(index+1).padStart(2,'0')}</span>{item.en}<small>{item.cn}</small></button>)}</div>
     <div className="works-stage" ref={stageRef}>
       {!expanded ? <div className="works-cover-view" key={activeCategory}>
-        {activeCategory === 'advertising-banners' ? <div className="cover-grid ads-cover-grid">{covers.map(cover => <Cover key={cover.id} cover={cover} square />)}</div> : <Carousel opts={{align:'start',slidesToScroll:1}} className="cover-carousel" aria-label={`${category.en}封面轮播`}><CarouselContent>{covers.map(cover => <CarouselItem className="cover-slide" key={cover.id}><Cover cover={cover} square={false} /></CarouselItem>)}</CarouselContent><div className="cover-carousel-controls"><CarouselPrevious aria-label="上一组封面"/><CarouselNext aria-label="下一组封面"/></div></Carousel>}
+        {activeCategory === 'advertising-banners' ? <div className="cover-grid ads-cover-grid">{covers.map(cover => <Cover key={cover.id} cover={cover} square mobileSwipe={mobileCovers} />)}</div> : mobileCovers ? <div className="cover-mobile-list">{covers.map(cover => <Cover key={cover.id} cover={cover} square={false} mobileSwipe />)}</div> : <Carousel opts={{align:'start',slidesToScroll:1}} className="cover-carousel" aria-label={`${category.en}封面轮播`}><CarouselContent>{covers.map(cover => <CarouselItem className="cover-slide" key={cover.id}><Cover cover={cover} square={false} /></CarouselItem>)}</CarouselContent><div className="cover-carousel-controls"><CarouselPrevious aria-label="上一组封面"/><CarouselNext aria-label="下一组封面"/></div></Carousel>}
         <button className="works-view-more" type="button" onClick={() => {setExpanded(true);scrollToStage();}}><span><small>{category.cn}</small>查看更多 / VIEW MORE</span><ArrowUpRight /></button>
       </div> : <div className="works-sublevel" key={activeCategory}>
         <div className="works-subhead"><div><span>SELECTED CATEGORY</span><h3>{category.en}</h3><p>{category.cn} · {items.length} IMAGES</p></div><button className="works-back" type="button" onClick={() => {setExpanded(false);scrollToStage();}}>← 返回分类封面 / BACK</button></div>
