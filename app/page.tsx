@@ -101,7 +101,7 @@ export default function Home() {
           <div className="about-copy reveal">
             <p className="eyebrow">GAME VISUAL DESIGNER · GUANGZHOU</p>
             <h2>Key visual design.<br />Campaign rollout.<br />Store asset production.</h2>
-            <p className="intro">我是一名拥有七年以上经验的游戏视觉设计师，长期参与日本、韩国、港澳台、东南亚及欧美市场的游戏发行项目。擅长从视觉概念、风格设定到多场景素材落地，并持续探索 AIGC 在游戏视觉工作流程中的实际应用。</p>
+            <p className="intro">拥有七年以上海外游戏视觉设计经验，覆盖日本、韩国、东南亚及欧美等市场，具备从视觉策略、创意方向到设计落地的全链路统筹能力。熟悉 AIGC 在游戏视觉创作中的应用，并将其融入日常设计流程，持续提升创作效率与视觉产出质量；同时关注市场反馈与数据表现，推动视觉方案与产品及商业目标有效衔接。</p>
             <div className="capability-list">{capabilities.map((item, index) => <span key={item}><b>{String(index + 1).padStart(2,'0')}</b>{item}</span>)}</div>
           </div>
         </div>
