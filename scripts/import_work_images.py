@@ -76,20 +76,36 @@ def main() -> int:
     counts: dict[str, int] = {}
 
     for category, prefix in CATEGORY_PREFIX.items():
-        source_dir = source_root / category
-        if not source_dir.is_dir():
+        source_dirs = [
+            directory
+            for directory in (source_root / category, source_root / "其他" / category)
+            if directory.is_dir()
+        ]
+        if not source_dirs:
             counts[category] = 0
             continue
 
-        files = sorted(
-            (path for path in source_dir.rglob("*") if path.is_file() and path.suffix.casefold() in SUPPORTED and path.name not in exclusions.get(category, [])),
-            key=natural_key,
-        )
+        files: list[tuple[Path, Path]] = []
+        for source_dir in source_dirs:
+            files.extend(
+                (path, path.relative_to(source_dir))
+                for path in sorted(
+                    (
+                        path
+                        for path in source_dir.rglob("*")
+                        if path.is_file()
+                        and path.suffix.casefold() in SUPPORTED
+                    ),
+                    key=natural_key,
+                )
+            )
         destination_dir = destination_root / category
         destination_dir.mkdir(parents=True, exist_ok=True)
         expected_previews = set()
 
-        for index, source in enumerate(files, start=1):
+        for index, (source, relative) in enumerate(files, start=1):
+            if source.name in exclusions.get(category, []):
+                continue
             try:
                 with Image.open(source) as image:
                     image.seek(0)
@@ -113,7 +129,6 @@ def main() -> int:
             image.save(destination, "WEBP", quality=80, method=4)
             expected_previews.add(filename)
             title, market, year = metadata(source, category, index)
-            relative = source.relative_to(source_dir)
             section = "other"
             merchandise_type = ""
             if category == "campaign-design":
